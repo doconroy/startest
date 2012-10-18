@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+@files = ();
+foreach $file (@ARGV) {
+  if (! -f $file) {
+    # try to find it in the path
+    foreach $path (split(/:/,$ENV{"PATH"})) {
+      if (-x "$path/$file") {
+        $file = "$path/$file";
+        last;
+      }
+    }
+  }
+  push(@files,$file);
+  # &edit($file);
+}
+
+if (@files == 1) {
+    $title = (@files == 1 ? $files[0] : "wvi");
+}
+
+$GVIM = "/usr/bin/gvim";
+$XTERM = "/usr/bin/xterm";
+$flist = "'" . join("' '",@files) . "'";
+if ( -x $GVIM ) {
+    $cmd = "gvim $flist";
+} elsif (-x $XTERM && $ENV{DISPLAY}) {
+    $cmd = "$XTERM -title '$title' -geometry 80x40 -e vi $flist &";
+} else {
+    $cmd = "vi $flist";
+}
+system($cmd);
